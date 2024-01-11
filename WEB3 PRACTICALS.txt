@@ -1,0 +1,286 @@
+ctrl+shift+c to copy and same with v to paste
+----------------------------------------------------------------------------------------------------------
+
+Practical-2
+
+sudo apt-get update
+sudo apt install golang-go
+git config --global core.autocrlf false
+git config --global core.longpaths true
+mkdir web3
+ls
+cd web3
+curl -sSL http://bit.ly/2ysbOFE | bash -s
+cd fabric-samples
+cd test-network
+ls
+./network.sh up
+./network.sh createChannel
+
+----------------------------------------------------------------------------------------------------------
+*VERY IMPORTANT*
+
+1.Go to google search geth version 1.12.0 and go to this(https://ethereumpow.github.io/go-ethereum/downloads/) and download 1.11.5 (64-bit)
+
+2.Copy the downloaded file to home/owais/
+
+3.Execute the following commands
+
+sudo apt-get remove geth
+tar -xzvf geth-linux-amd64-1.11.5-a38f4108.tar.gz
+sudo cp geth /usr/bin
+geth version
+
+4.Then start practical
+----------------------------------------------------------
+
+Practical-3
+
+sudo add-apt-repository -y ppa:ethereum/ethereum
+owais@LAPTOP-AC7S2KIN:~$ mkdir prac3
+owais@LAPTOP-AC7S2KIN:~$ cd prac3
+ geth -datadir node1 account new
+geth -datadir node2 account new
+
+
+Open notepad from linux and paste this code and change the alloc parameter accordingly (account1,account2)
+
+{
+ "config": {
+ "chainId": 12345,
+ "homesteadBlock": 0,
+ "eip150Block": 0,
+ "eip155Block": 0,
+ "eip158Block": 0,
+ "byzantiumBlock": 0,
+ "constantinopleBlock": 0,
+ "petersburgBlock": 0,
+ "ethash": {}
+ },
+ "difficulty": "1",
+ "gasLimit": "8000000",
+ "alloc": {
+ "D1c6410823817D735d02b0Bc540905684391e6eD": { "balance": "500000" },
+ "08826a3Bc5e8F6d1B0BBb85dae39978e62359045": { "balance": "500000" }
+ }
+}
+}
+
+geth init --datadir node1 genesis.json
+geth init --datadir node2 genesis.json
+bootnode -genkey boot.key
+bootnode -nodekey boot.key -addr :30305
+
+a. geth --datadir node1 --port 30306 --bootnodes enode://c62f91ab3c4489cb172da45baf33b7b3ae36c7857621d2e5253934c950423dd4b1898e081fc8946861715c14aa63d4861a291c1aa96587d0f00cef33e7e3c2e5@127.0.0.1:0?discport=30305 --networkid 123454321 --unlock 0xC6FC14BdAE1D87Ea112F10CcB415Dd6CD422cBDD --password owais --authrpc.port 8550
+
+Then open another ubuntu and do the same a
+cd prac3
+geth --datadir node2 --port 30307 --bootnodes enode://c62f91ab3c4489cb172da45baf33b7b3ae36c7857621d2e5253934c950423dd4b1898e081fc8946861715c14aa63d4861a291c1aa96587d0f00cef33e7e3c2e5@127.0.0.1:0?discport=30305 --networkid 123454321 --unlock 0x474CF198670a79D7f53f15dA3d9a1F6B0079F316 --password node2/owais.txt --authrpc.port 8551
+
+Then open another ubuntu(node1) 
+cd prac3
+cd node1
+geth attach geth.ipc
+
+Then open another ubuntu(node2) 
+cd prac3
+cd node2
+geth attach geth.ipc
+
+Then execute these commands on both terminals
+
+admin.nodeInfo
+
+ admin.addPeer("enode://c62f91ab3c4489cb172da45baf33b7b3ae36c7857621d2e5253934c950423dd4b1898e081fc8946861715c14aa63d4861a291c1aa96587d0f00cef33e7e3c2e5@127.0.0.1:0?discport=30305")
+
+admin.peers
+eth.getBalance(eth.accounts[0])
+eth.blockNumber
+eth.accounts;
+
+-----------imp-------
+ps
+kill -9 then whatever service running geth  (use this if shows error already running)
+
+---------------------
+--------------------------------------------------------------------------------------------------------
+
+Practical-4
+
+https://ethereum.stackexchange.com/questions/64168/asset-based-transfer-solidity-contract
+
+https://www.devoven.com/encoding/string-to-bytes32
+
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.2 <0.9.0;
+
+contract Asset {
+
+uint256 public owners_count;
+address public contract_owner;             
+bytes32 public land_id;                   
+bytes32 public land_sqrfeet;             
+bytes32 public land_created_date;        
+mapping(uint => address) public owners;     
+
+function createland(bytes32 _land_id, bytes32 _land_sqrfeet, bytes32 _land_created_date) public returns (bool){
+    setOwner(msg.sender);
+    land_id = _land_id;
+    land_sqrfeet = _land_sqrfeet;
+    land_created_date = _land_created_date;
+    return true;
+}
+
+
+modifier onlyOwner(){
+    require(msg.sender == contract_owner);
+    _;
+}
+
+
+function transferOwnership(address _newOwner) public onlyOwner(){
+    require(_newOwner != address(0));
+    contract_owner = _newOwner;
+}
+
+
+function previousOwner() view public returns(address){
+    if(owners_count != 0){
+        uint256 previous_owner = owners_count - 1;
+        return owners[previous_owner];
+    }
+}
+
+function setOwner(address owner)public{
+    owners_count += 1 ;
+    owners[owners_count] = owner;
+}
+
+function getCurrentOwner() view public returns(address){
+    return owners[owners_count] ;
+}
+
+function getOwnerCount() view public returns(uint256){
+    return owners_count;
+}}
+
+---------------------------------------------------------------------------
+
+Practial-5
+
+mkdir prac5
+curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/master/scripts/bootstrap.sh | bash -s 1.3.0
+cd fabric-samples
+
+docker rm -f $(docker ps -aq)
+
+ls
+cd fabcar
+sudo apt install nodejs
+./startFabric.sh javascript
+npm install
+
+
+
+
+---------------------------------------------------------------------------
+
+Practical-6
+
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.12 <0.9.0;
+
+contract VotingForTopper {
+  address owner;
+  string public Purpose;
+  struct Voter{
+    bool authorized;
+    bool voted;
+  }
+  uint totalVotes;
+  uint teamA;
+  uint teamB;
+  uint teamC;
+
+  mapping (address=>Voter) info;
+  constructor(string memory _name) {
+    Purpose = _name;
+    owner = msg.sender;
+
+  }
+  modifier ownerOn() {
+    require(msg.sender==owner);
+    _;
+  }
+  function Authorize(address _person) ownerOn public {
+    info[_person].authorized= true;
+  }
+  function Team_A(address _address) public {
+    require(!info[_address].voted,"already voted person");
+    require(info[_address].authorized,"You Have No Right For Vote");
+    info[_address].voted = true;
+    teamA++;
+    totalVotes++;
+  }
+  function Team_B(address _address) public {
+    require(!info[_address].voted,"already voted person");
+    require(info[_address].authorized,"You Have No Right For Vote");
+    info[_address].voted = true;
+    teamB++;
+    totalVotes++;
+  }
+  function Team_C(address _address) public returns(string memory) {
+    require(!info[_address].voted,"already voted person");
+    require(info[_address].authorized,"You Have No Right For Vote");
+    info[_address].voted = true;
+    teamC++;
+    totalVotes++;
+    return("Thanks for Voting");
+  }
+  function Total_Votes() public view returns (uint) {
+    return totalVotes;
+  }
+  function Result_of_Voting() public view returns (string memory) {
+    if (teamA > teamB) {
+      if (teamA > teamC) {
+        return "A is winning";
+      }
+      else if (teamC > teamA){
+        return "C is winning";
+      }
+    }
+    else if (teamB > teamC) {
+      return "B is winning";
+    }
+    else if (teamC > teamA && teamC > teamB) {
+      return "C is winning";
+    }
+    return "No one is winning";
+  }
+
+
+}
+
+
+---------------------------------------------------------------------------
+
+Practical-7
+
+docker rmi $(docker images -q) -f
+git clone https://github.com/hyperledger/fabric-samples.git
+cd fabric-samples
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
